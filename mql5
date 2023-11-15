@@ -1,0 +1,99 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                          Structure Breakout EA MT5 |
+//|                                  Copyright 2021, Forex Robot Easy Team |
+//|                                             https://www.forexroboteasy.com |
+//+------------------------------------------------------------------+
+
+// Include necessary libraries
+#include <Trade\Trade.mqh>
+#include <Trade\PositionInfo.mqh>
+
+// Define input parameters
+input int StopLoss = 100; // Stop Loss in points
+input int TakeProfit = 200; // Take Profit in points
+input double RiskPercentage = 2.0; // Risk percentage per trade
+input bool EnableLongPositions = true; // Enable long positions
+input bool EnableShortPositions = true; // Enable short positions
+
+// Define global variables
+CTrade trade; // Trade object
+CPositionInfo positionInfo; // Position info object
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+    // Initialize trade object
+    trade.SetExpertMagicNumber(GetMagicNumber());
+    
+    return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+    // Check if long positions are enabled
+    if (EnableLongPositions)
+    {
+        // Check if there are no open long positions
+        if (positionInfo.TotalLongPositions() == 0)
+        {
+            // Check for structure breakout
+            if (IsStructureBreakout())
+            {
+                // Open long position
+                trade.Buy(0, Lots(), Ask, StopLoss, TakeProfit, 'Structure Breakout Long');
+            }
+        }
+    }
+    
+    // Check if short positions are enabled
+    if (EnableShortPositions)
+    {
+        // Check if there are no open short positions
+        if (positionInfo.TotalShortPositions() == 0)
+        {
+            // Check for structure breakout
+            if (IsStructureBreakout())
+            {
+                // Open short position
+                trade.Sell(0, Lots(), Bid, StopLoss, TakeProfit, 'Structure Breakout Short');
+            }
+        }
+    }
+}
+
+//+------------------------------------------------------------------+
+//| Custom function to check for structure breakout                   |
+//+------------------------------------------------------------------+
+bool IsStructureBreakout()
+{
+    // Add your logic here to identify structure breakout
+    // Return true if structure breakout is detected, otherwise false
+}
+
+//+------------------------------------------------------------------+
+//| Custom function to calculate lot size based on risk percentage    |
+//+------------------------------------------------------------------+
+double Lots()
+{
+    double accountBalance = AccountInfoDouble(ACCOUNT_BALANCE);
+    double accountEquity = AccountInfoDouble(ACCOUNT_EQUITY);
+    double accountRisk = accountEquity * RiskPercentage / 100.0;
+    double lotSize = NormalizeDouble(accountRisk / StopLoss / 10.0, 2);
+    
+    return lotSize;
+}
+
+//+------------------------------------------------------------------+
+//| Custom function to generate magic number for the EA               |
+//+------------------------------------------------------------------+
+int GetMagicNumber()
+{
+    int magicNumber = 123456; // Change this value to a unique number for each instance of the EA
+    return magicNumber;
+}
